@@ -73,7 +73,7 @@ async def select_diff(callback: CallbackQuery, state: FSMContext):
                     .order_by(func.random())
                     .limit(5)
                 )
-  
+
             except Exception as e:
                 logging.error(f"Ошибка при получении вопросов: {e}")
                 await callback.message.edit_text("Ошибка при получении вопросов")
@@ -83,13 +83,17 @@ async def select_diff(callback: CallbackQuery, state: FSMContext):
             option_list = first_question.options.split(";;;")
             question_id = first_question.id
             option_index = first_question.id
-            
+            first_question_id = question_list[0].id
+            second_question_id = question_list[1].id
+            third_question_id = question_list[2].id
+            fourth_question_id = question_list[3].id
+            fifth_question_id = question_list[4].id
             if len(question_list) < 5:
                     logging.error("В этой теме недостаточно вопросов для викторины.")
                     await callback.message.edit_text("В этой теме недостаточно вопросов для викторины, выберите другую тему!",
                                                      reply_markup=await kb.back_to_menu_inlain())   
                     return   
-                                   
+
         if level == "easy":
             x = 2
         elif level == "normall":
@@ -105,7 +109,12 @@ async def select_diff(callback: CallbackQuery, state: FSMContext):
             current_question_index = 0,
             option_index = option_index,
             new_correct_index = new_correct_index,
-            x = x 
+            x = x ,
+            first_question_id = first_question_id,
+            second_question_id = second_question_id,
+            third_question_id = third_question_id,
+            fourth_question_id = fourth_question_id,
+            fifth_question_id = fifth_question_id
         )
         
         
@@ -129,6 +138,11 @@ async def check_answer_and_next_question(callback: CallbackQuery, state: FSMCont
     correct_answer = data["correct_answer"]
     current_question_index = data["current_question_index"]
     new_correct_index = data["new_correct_index"]
+    first_question_id = data["first_question_id"]
+    second_question_id = data["second_question_id"]
+    third_question_id = data["third_question_id"]
+    fourth_question_id = data["fourth_question_id"]
+    fifth_question_id = data["fifth_question_id"]
     x = int(data["x"])
 
     try:
@@ -158,16 +172,16 @@ async def check_answer_and_next_question(callback: CallbackQuery, state: FSMCont
         else: 
             experience = correct_answer * x * 5
             
-            await callback.message.edit_text(f"""
-<b>Поздравляю! Вы прошли викторину!</b>\n
-Колличество правильных ответов: {correct_answer} из {len(question_list)}
-Получено опыта: <code>{experience}</code>
-                                            """, 
-                                            reply_markup=await kb.back_to_menu_inlain())
+
             
             try:
                 async with async_session() as session:
                     user = await session.scalar(select(UserProfile).where(UserProfile.tg_id == tg_id))
+                    quest1 = await session.scalar(select(Question).where(Question.id == first_question_id))
+                    quest2 = await session.scalar(select(Question).where(Question.id == second_question_id))
+                    quest3 = await session.scalar(select(Question).where(Question.id == third_question_id))
+                    quest4 = await session.scalar(select(Question).where(Question.id == fourth_question_id))
+                    quest5 = await session.scalar(select(Question).where(Question.id == fifth_question_id))
                     
                     if user: 
                         user.total_games += 1
@@ -193,12 +207,34 @@ async def check_answer_and_next_question(callback: CallbackQuery, state: FSMCont
                         )
                         session.add(new_user)
                         await session.commit()
-                    
+            
             except Exception as e:
                 logging.error(f"Не удалось обновить данные пользователя: {e}")
                 await callback.answer("НЕ УДАЛОСЬ ОБНОВИТЬ ДАННЫЕ")
-            finally:
-                await state.clear()
+            await callback.message.edit_text(f"""
+<b>🎉Поздравляю! Вы прошли викторину!🎉</b>
+
+✅Колличество правильных ответов: {correct_answer} из {len(question_list)}
+⭐Получено опыта: <code>{experience}</code>
+
+<b>Отгадки викторины:</b>
+
+1.  {quest1.text_question}
+     Правильный ответ: <i> {quest1.options.split(";;;")[0]}</i>
+
+2.  {quest2.text_question}
+     Правильный ответ: <i> {quest2.options.split(";;;")[0]}</i>
+
+3.  {quest3.text_question}
+     Правильный ответ: <i> {quest3.options.split(";;;")[0]}</i>
+
+4.  {quest4.text_question}
+     Правильный ответ: <i> {quest4.options.split(";;;")[0]}</i>
+
+5.  {quest5.text_question}
+     Правильный ответ: <i> {quest5.options.split(";;;")[0]}</i>
+""", 
+                                            reply_markup=await kb.back_to_menu_inlain())
     except Exception as e:
         logging.error(f"Ошибка при новом вопросе: {e}")
         await callback.message.answer("Ошибка при новом вопросе")

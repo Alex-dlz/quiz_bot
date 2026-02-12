@@ -7,7 +7,7 @@ import logging
 import asyncio
 import sys
 
-from app.utils.constants import TOKEN
+
 from app.handlers.user import user
 from app.database.core import init_models
 from app.handlers.game import game
