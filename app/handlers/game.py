@@ -215,7 +215,7 @@ async def check_answer_and_next_question(callback: CallbackQuery, state: FSMCont
 <b>🎉Поздравляю! Вы прошли викторину!🎉</b>
 
 ✅Колличество правильных ответов: {correct_answer} из {len(question_list)}
-⭐Получено опыта: <code>{experience}</code>
+🔥Получено опыта: <code>{experience}</code>
 
 <b>Отгадки викторины:</b>
 

@@ -10,7 +10,7 @@ import app.keyboards.user_kb as kb
 from app.states.UserState import User
 from app.database.models import UserProfile
 from app.database.core import async_session
-from app.utils.constants import RULE, MAIN_MENU
+from app.utils.constants import RULE, MAIN_MENU, HELP
 
 
 user = Router()
@@ -28,6 +28,11 @@ async def cmd_start(message: Message, state: FSMContext):
         MAIN_MENU, 
         reply_markup=await kb.user_main()
     )
+
+@user.message(Command("help"))
+async def cmd_help(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer(HELP)
     
 @user.callback_query(F.data == "back_to_menu")
 async def back_to_menu(callback: CallbackQuery, state: FSMContext):

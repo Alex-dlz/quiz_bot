@@ -19,7 +19,7 @@ load_dotenv()
 @admin.message(Command("admin"))
 async def cmd_admin(message: Message, state: FSMContext):
     admin_id = os.getenv("ADMIN_ID")
-    if message.from_user.id == admin_id:
+    if message.from_user.id == int(admin_id):
         await message.answer("ПРИВЕТСВУЮ КАПИТАН!",
                              reply_markup=ReplyKeyboardRemove())
         await message.answer("Главное меню админа!",
